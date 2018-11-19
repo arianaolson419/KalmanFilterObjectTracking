@@ -1,5 +1,5 @@
 ---
-title: This will be the tile tag.
+title: Story One
 ---
 
 Story One
