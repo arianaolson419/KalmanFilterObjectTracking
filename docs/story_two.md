@@ -2,9 +2,7 @@
 title: Story Two
 ---
 
-Story Two
-=========
-# Story Two
-## Temp
-## Computer Vision
+- [Home](https://arianaolson419.github.io/KalmanFilterObjectTracking/)
+
+## Story Two
 come back for more content later!
