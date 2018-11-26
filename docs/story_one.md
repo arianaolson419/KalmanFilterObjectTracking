@@ -2,7 +2,7 @@
 title: Story One
 ---
 
-- [Home](https://arianaolson419.github.io/KalmanFilterObjectTracking/)
+- [Home](index.md)
 
 ## Story One
 ### Camera Callibration

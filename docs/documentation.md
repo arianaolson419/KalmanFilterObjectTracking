@@ -2,7 +2,7 @@
 title: Documentation
 ---
 
-- [Home](https://arianaolson419.github.io/KalmanFilterObjectTracking/)
+- [Home](index.md)
 
 ## Documentation
 placeholder text. Come back for more content later!
