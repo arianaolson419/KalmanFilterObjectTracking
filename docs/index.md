@@ -5,8 +5,8 @@ title: Kalman Filters for Object Tracking
 
 ### Pages
 - [Story One](story_one.md)
-- [Story Two](story_one.md)
-- [Documentation](story_one.md)
+- [Story Two](story_two.md)
+- [Documentation](documentation.md)
 
 ### Overview
 This project is for CompRobo.
