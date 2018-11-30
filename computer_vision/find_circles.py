@@ -12,6 +12,14 @@ class CVOperations(object):
         self.min_radius = min_radius
         self.max_radius = max_radius
 
+    def update_parameters(self, dp, min_dist, param_one, param_two, min_radius, max_radius):
+        self.dp = dp
+        self.min_dist = min_dist
+        self.param_one = param_one
+        self.param_two = param_two
+        self.min_radius = min_radius
+        self.max_radius = max_radius
+        
     # TODO: delete this function and put image drawing back into detect_circles_image.
     def draw_circles_image(self, circles, output):
         if circles is not None:
@@ -43,6 +51,9 @@ class CVOperations(object):
         image = cv2.imread(image_name)
         self.detect_circles_np_array(image)
 
+    def most_likely_circle(self, circles):
+        pass
+
     def histogram_colors_in_circle(self, image, circle):
         width, height, _ = image.shape
         x, y, r = circle
@@ -54,16 +65,11 @@ class CVOperations(object):
                 distance_squared = dx * dx + dy * dy
                 if distance_squared <= r * r:
                     pixels.append(image[i][j])
-        blue = [pixel[0] for pixel in pixels]
-        green = [pixel[1] for pixel in pixels]
-        red = [pixel[2] for pixel in pixels]
+        print(np.mean(np.array(pixels), axis=0))
+#        blue = [pixel[0] for pixel in pixels]
+#        green = [pixel[1] for pixel in pixels]
+#        red = [pixel[2] for pixel in pixels]
         
-        plt.figure()
-        plt.hist(blue, bins=10)
-        plt.hist(red, bins=10)
-        plt.hist(green, bins=10)
-        plt.show()
-
         return pixels
 
     def detect_circles_video(self):
@@ -77,8 +83,8 @@ class CVOperations(object):
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, self.dp, self.min_dist)
                 self.draw_circles_frame(circles, frame)
-#                if circles is not None:
-#                    self.histogram_colors_in_circle(frame, circles[0][0])
+                if circles is not None:
+                    self.histogram_colors_in_circle(frame, circles[0][0])
                 cv2.imshow('frame', frame)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
