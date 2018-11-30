@@ -1,5 +1,6 @@
 import numpy as np
-
+import math
+import matplotlib.pyplot as plt
 class GeneralKalmanFilter():
     """
     Implements the multivariate Kalman Filter algorithm as described in
@@ -55,9 +56,34 @@ class GeneralKalmanFilter():
         y = z - np.dot(self.H, self.x)
         self.x += np.dot(K, y)
         self.P = self.P - np.dot(np.dot(K, self.H), (self.P))
+    
+    def compute_fake_data(self, z_var, process_var, count=1, dt=1.):
+        "returns track, measurements 1D ndarrays"
+        x, vel = 0., 1.
+        z_std = math.sqrt(z_var) 
+        p_std = math.sqrt(process_var)
+        xs, zs = [], []
+        for _ in range(count):
+            v = vel + (np.random.randn() * p_std)
+            x += v*dt        
+            xs.append(x)
+            zs.append(x + np.random.randn() * z_std)        
+        return np.array(xs), np.array(zs)
 
 if __name__ == "__main__":
     square = np.ones((2, 2))
-    kf = GeneralKalmanFilter(num_vars=2, state_covar=np.ones((2,)), process_covar=np.ones((2,)), process_transition_function=square, measurement_covar=square, control_matrix=square)
-    kf.predict(u=np.zeros((2, 1)))
-    kf.update([[2], [2]])
+    diag = np.diag([1,1])
+    filter = GeneralKalmanFilter(num_vars=2, state_covar=np.ones((2,)), process_covar=np.ones((2,)), process_transition_function=square, measurement_covar=diag, control_matrix=square)
+
+    # Create fake data and use filter on it, plot results
+    track, zs = filter.compute_dog_data(1, .01, 50)
+    xs, cov = [], []
+    for z in zs:
+        filter.predict(square)
+        filter.update(z)
+        xs.append(filter.x)
+    
+    plt.plot(track, 'b')
+    plt.plot(zs, 'g')
+    plt.plot(np.array(xs)[:,0], 'r')
+    plt.show()
