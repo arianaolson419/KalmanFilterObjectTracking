@@ -33,5 +33,12 @@ class GeneralKalmanFilter():
     
 
     def update(self):
-        """ Calculate the residual and Kalman scaling factor """
-        pass
+        """ 
+            Calculate the residual and Kalman scaling factor 
+            z: measurement
+        """
+        S = dot(self.H, self.P).dot(self.H.T) + self.R
+        K = dot(self.P, self.H.T).dot(inv(S))
+        y = z - dot(self.H, self.x)
+        self.x += dot(K, y)
+        self.P = self.P - dot(self.K, self.H).dot(self.P)
