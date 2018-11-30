@@ -1,6 +1,10 @@
 import numpy as np
 
 class GeneralKalmanFilter():
+    """
+    Implements the multivariate Kalman Filter algorithm as described in
+    https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/06-Multivariate-Kalman-Filters.ipynb.
+    """
     def __init__(self, num_vars, state_covar, process_covar, process_transition_function, measurement_covar, control_matrix):
         """
             Initialize the varables of a general Kalman filter
@@ -28,7 +32,10 @@ class GeneralKalmanFilter():
         self.B = control_matrix # transform control input
 
     def predict(self, u):
-        """ Use process model to predict the posterior """
+        """
+            Use process model to predict the posterior
+            u: control input vector.
+        """
         # Calculate predicted state.
         assert self.B.shape[1] == u.shape[0], 'state and control input must be the same shape'
         assert self.x.shape[0] == self.B.shape[0], 'product of u and control matrix must be the same size as the state.'
@@ -54,4 +61,3 @@ if __name__ == "__main__":
     kf = GeneralKalmanFilter(num_vars=2, state_covar=np.ones((2,)), process_covar=np.ones((2,)), process_transition_function=square, measurement_covar=square, control_matrix=square)
     kf.predict(u=np.zeros((2, 1)))
     kf.update([[2], [2]])
-    print('a', kf.x)
