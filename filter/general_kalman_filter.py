@@ -76,7 +76,7 @@ if __name__ == "__main__":
     filter = GeneralKalmanFilter(num_vars=2, state_covar=np.ones((2,)), process_covar=np.ones((2,)), process_transition_function=square, measurement_covar=diag, control_matrix=square)
 
     # Create fake data and use filter on it, plot results
-    track, zs = filter.compute_dog_data(1, .01, 50)
+    track, zs = filter.compute_fake_data(1, .01, 50)
     xs, cov = [], []
     for z in zs:
         filter.predict(square)
