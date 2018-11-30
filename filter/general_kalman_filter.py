@@ -21,9 +21,13 @@ class GeneralKalmanFilter():
         self.R = np.diag(process_covar) # measurement covariance
         self.B = control_matrix # transform control input
 
-    def predict(self):
+    def predict(self, u):
     	""" Use process model to predict the posterior """
-        pass
+        # Calculate predicted state.
+        self.x = F * x + B * u
+
+        # Calculate belief in predicted state.
+        self.P = F * P * np.transpose(F) + Q
     
 
     def update(self):
