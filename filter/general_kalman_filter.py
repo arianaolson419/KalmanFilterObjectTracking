@@ -22,7 +22,7 @@ class GeneralKalmanFilter():
         self.Q = np.diag(process_covar) # process covariance
         assert self.Q.shape == self.F.shape, 'state transition function and process covariance function must be the same shape.'
         self.H = np.zeros(num_vars) # measurement (initialized at zero)
-        assert self.H.shape == self.P.shape, 'measurement function and process covariance must be the same shape.'
+        assert self.H.shape[0] == self.x.shape[0], 'multiplication of the measurement function and the state must result in a 1x1 matrix.'
         self.R = np.diag(process_covar) # measurement covariance
         assert self.R.shape == self.P.shape, 'noise covariance must be the same shape as the process covariance.'
         self.B = control_matrix # transform control input
@@ -43,8 +43,15 @@ class GeneralKalmanFilter():
             Calculate the residual and Kalman scaling factor 
             z: measurement
         """
-        S = dot(self.H, self.P).dot(self.H.T) + self.R
-        K = dot(self.P, self.H.T).dot(inv(S))
-        y = z - dot(self.H, self.x)
-        self.x += dot(K, y)
-        self.P = self.P - dot(self.K, self.H).dot(self.P)
+        S = np.dot(self.H, self.P).dot(self.H.T) + self.R
+        K = np.dot(self.P, self.H.T).dot(np.linalg.inv(S))
+        y = z - np.dot(self.H, self.x)
+        self.x += np.dot(K, y)
+        self.P = self.P - np.dot(np.dot(K, self.H), (self.P))
+
+if __name__ == "__main__":
+    square = np.ones((2, 2))
+    kf = GeneralKalmanFilter(num_vars=2, state_covar=np.ones((2,)), process_covar=np.ones((2,)), process_transition_function=square, measurement_covar=square, control_matrix=square)
+    kf.predict(u=np.zeros((2, 1)))
+    kf.update([[2], [2]])
+    print('a', kf.x)
