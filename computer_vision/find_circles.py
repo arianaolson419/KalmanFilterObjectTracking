@@ -4,6 +4,8 @@ import cv2
 
 class CVOperations(object):
     def __init__(self, dp=1.2, min_dist=100, param_one=100, param_two=100, min_radius=0, max_radius=0):
+        # See the documentation for OpenCV HoughCircles for an explanation of the parameters below.
+        # https://docs.opencv.org/2.4/modules/imgproc/doc/feature_detection.html?highlight=houghcircles#houghcircles
         self.hough_method = cv2.HOUGH_GRADIENT
         self.dp = dp
         self.min_dist = min_dist
@@ -11,16 +13,6 @@ class CVOperations(object):
         self.param_two = param_two
         self.min_radius = min_radius
         self.max_radius = max_radius
-
-    # TODO: delete this function and put image drawing back into detect_circles_image.
-    def draw_circles_image(self, circles, output):
-        if circles is not None:
-            circles = np.round(circles[0, :]).astype('int')
-
-            for (x, y, r) in circles:
-                cv2.circle(output, (x, y), r, (0, 255, 0), 4)
-                cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
-        return output
 
     def draw_circles_frame(self, circles, frame):
         if circles is not None:
@@ -35,7 +27,7 @@ class CVOperations(object):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, self.dp, self.min_dist)
-        ouptut = self.draw_circles_image(circles, output)
+        self.draw_circles_frame(circles, output)
         cv2.imshow('output', np.hstack([image, output]))
         cv2.waitKey(0)
 
@@ -43,28 +35,31 @@ class CVOperations(object):
         image = cv2.imread(image_name)
         self.detect_circles_np_array(image)
 
+    def most_likely_circle(self, circles):
+        pass
+
     def histogram_colors_in_circle(self, image, circle):
         width, height, _ = image.shape
         x, y, r = circle
         pixels = []
-        for i in range(width):
-            for j in range(height):
+        for i in range(0, width, 10):
+            for j in range(0, height, 10):
                 dx = i - x
                 dy = j - y
                 distance_squared = dx * dx + dy * dy
                 if distance_squared <= r * r:
                     pixels.append(image[i][j])
-        blue = [pixel[0] for pixel in pixels]
-        green = [pixel[1] for pixel in pixels]
-        red = [pixel[2] for pixel in pixels]
-        
-        plt.figure()
-        plt.hist(blue, bins=10)
-        plt.hist(red, bins=10)
-        plt.hist(green, bins=10)
-        plt.show()
-
+        print(np.mean(np.array(pixels), axis=0))
         return pixels
+
+    def detect_circles_np_array(self, image):
+        output = image.copy()
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, self.dp, self.min_dist)
+        self.draw_circles_frame(circles, output)
+        cv2.imshow('output', output)
+        cv2.waitKey(0)
 
     def detect_circles_video(self):
         """Detect circles in a video using Hough Circles.
@@ -77,8 +72,8 @@ class CVOperations(object):
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, self.dp, self.min_dist)
                 self.draw_circles_frame(circles, frame)
-#                if circles is not None:
-#                    self.histogram_colors_in_circle(frame, circles[0][0])
+                if circles is not None:
+                    self.histogram_colors_in_circle(frame, circles[0][0])
                 cv2.imshow('frame', frame)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
