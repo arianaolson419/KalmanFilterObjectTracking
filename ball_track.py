@@ -46,13 +46,15 @@ class BallTrack(object):
 
     def find_circles(self, img):
         img = self.bridge.imgmsg_to_cv2(img, desired_encoding="rgb8")
-        img = cv2.resize(img, (160, 120), interpolation=cv2.INTER_AREA)
-        self.cv_op.detect_circles_np_array(img)
+#        img = cv2.resize(img, (160, 120), interpolation=cv2.INTER_AREA)
+#        img = np.array(img)
+#        self.cv_op.detect_circles_np_array(img)
 
     def run(self):
         self.trackbar()
         cv2.waitKey(0)
         rospy.spin()
+        cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     node = BallTrack()
