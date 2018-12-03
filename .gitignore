@@ -3,3 +3,6 @@
 
 # Ignore test output videos.
 **output.avi
+
+# Ignore __pycache__
+**__pycache__*
