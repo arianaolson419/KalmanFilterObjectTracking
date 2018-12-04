@@ -17,23 +17,19 @@ class CVOperations(object):
     def set_dp(self, dp):
         self.dp = dp
 
+    def draw_circle(self, circle, frame, color=(0, 255, 0)):
+        x, y, r = circle
+        cv2.circle(frame, (x, y), r, color, 4)
+        cv2.rectangle(frame, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+
+
     def draw_circles_frame(self, circles, frame):
         if circles is not None:
             circles = np.round(circles[0, :]).astype('int')
 
-            for (x, y, r) in circles:
-                cv2.circle(frame, (x, y), r, (0, 255, 0), 4)
-                cv2.rectangle(frame, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+            for circle in circles:
+                self.draw_circle(circle, frame)
         
-    def detect_circles_np_array(self, image):
-        output = image.copy()
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, self.dp, self.min_dist)
-        self.draw_circles_frame(circles, output)
-        cv2.imshow('output', np.hstack([image, output]))
-        cv2.waitKey(0)
-
     def detect_circles_image(self, image_name='soccer.jpg'):
         image = cv2.imread(image_name)
         self.detect_circles_np_array(image)
@@ -55,14 +51,15 @@ class CVOperations(object):
         print(np.mean(np.array(pixels), axis=0))
         return pixels
 
-    def detect_circles_np_array(self, image, wait=0):
-        #output = image.copy()
+    def detect_circles_np_array(self, image, output_name, wait=0):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, self.dp, self.min_dist)
         self.draw_circles_frame(circles, image)
-        cv2.imshow('output', image)
+        cv2.imshow(output_name, image)
         cv2.waitKey(wait)
+
+        return circles
 
     def detect_circles_video(self):
         """Detect circles in a video using Hough Circles.
