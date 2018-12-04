@@ -14,12 +14,13 @@ class BallTrack(object):
 
         self.bridge = CvBridge()
         self.cv_op = CVOperations()
+        self.output_window_name = 'Neato Camera Output'
         self.current_image = None
 
     def trackbar(self):
         """Allows the user to dynamically adjust the parameters of the Hough Circles algorithm
         """
-        title_window = 'Slider'
+        title_window = self.output_window_name
         cv2.namedWindow(title_window)
 
         def on_dp_trackbar(dp):
@@ -50,7 +51,7 @@ class BallTrack(object):
         cv2.createTrackbar('max_radius', title_window, int(self.cv_op.max_radius), 160, on_max_radius_trackbar)
 
     def find_circles(self, img):
-        img = self.bridge.imgmsg_to_cv2(img, desired_encoding="rgb8")
+        img = self.bridge.imgmsg_to_cv2(img, desired_encoding="bgr8")
         img = cv2.resize(img, (160, 120), interpolation=cv2.INTER_AREA)
         img = np.array(img)
         self.current_image = img
@@ -60,7 +61,7 @@ class BallTrack(object):
         self.trackbar()
         while not rospy.is_shutdown():
             if self.current_image is not None:
-                self.cv_op.detect_circles_np_array(self.current_image, wait=25)
+                circles = self.cv_op.detect_circles_np_array(self.current_image, self.output_window_name, wait=25)
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
