@@ -14,6 +14,8 @@ class BallTrack(object):
 
         self.bridge = CvBridge()
         self.cv_op = CVOperations()
+        image_size = (160, 120, 3)
+        self.current_image = None
 
     def trackbar(self):
         """Allows the user to dynamically adjust the parameters of the Hough Circles algorithm
@@ -22,7 +24,7 @@ class BallTrack(object):
         cv2.namedWindow(title_window)
 
         def on_dp_trackbar(dp):
-            self.cv_op.dp = dp / 10.
+            self.cv_op.dp = max(0.001, dp / 10.)
 
         def on_min_dist_trackbar(min_dist):
             self.cv_op.min_dist = min_dist
@@ -41,19 +43,21 @@ class BallTrack(object):
 
         # Note: sliders use integer values, so user input may be altered before
         # the CVOperations object is updated.
-        cv2.createTrackbar('dp', title_window , 12, 100, on_dp_trackbar)
-        cv2.createTrackbar('min_dist', title_window, 100, 500, on_min_dist_trackbar)
+        cv2.createTrackbar('dp', title_window , int(self.cv_op.dp * 10), 100, on_dp_trackbar)
+        cv2.createTrackbar('min_dist', title_window, int(self.cv_op.min_dist), 500, on_min_dist_trackbar)
 
     def find_circles(self, img):
         img = self.bridge.imgmsg_to_cv2(img, desired_encoding="rgb8")
-#        img = cv2.resize(img, (160, 120), interpolation=cv2.INTER_AREA)
-#        img = np.array(img)
-#        self.cv_op.detect_circles_np_array(img)
+        img = cv2.resize(img, (160, 120), interpolation=cv2.INTER_AREA)
+        img = np.array(img)
+        self.current_image = img
 
     def run(self):
+        rospy.Rate(2)
         self.trackbar()
-        cv2.waitKey(0)
-        rospy.spin()
+        while not rospy.is_shutdown():
+            if self.current_image is not None:
+                self.cv_op.detect_circles_np_array(self.current_image, wait=25)
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
