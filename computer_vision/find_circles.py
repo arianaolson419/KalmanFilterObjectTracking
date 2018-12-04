@@ -14,6 +14,9 @@ class CVOperations(object):
         self.min_radius = min_radius
         self.max_radius = max_radius
 
+    def set_dp(self, dp):
+        self.dp = dp
+
     def draw_circles_frame(self, circles, frame):
         if circles is not None:
             circles = np.round(circles[0, :]).astype('int')
@@ -52,14 +55,14 @@ class CVOperations(object):
         print(np.mean(np.array(pixels), axis=0))
         return pixels
 
-    def detect_circles_np_array(self, image):
-        output = image.copy()
+    def detect_circles_np_array(self, image, wait=0):
+        #output = image.copy()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, self.dp, self.min_dist)
-        self.draw_circles_frame(circles, output)
-        cv2.imshow('output', output)
-        cv2.waitKey(0)
+        self.draw_circles_frame(circles, image)
+        cv2.imshow('output', image)
+        cv2.waitKey(wait)
 
     def detect_circles_video(self):
         """Detect circles in a video using Hough Circles.
