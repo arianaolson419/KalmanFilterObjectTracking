@@ -1,8 +1,11 @@
-# Ignore .swp files.
-*.swp
 
 # Ignore test output videos.
 **output.avi
 
 # Ignore __pycache__
 **__pycache__*
+
+# Ignore other file extentions.
+**.swp
+**.pyc
+**.swo
