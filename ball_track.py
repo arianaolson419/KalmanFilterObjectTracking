@@ -16,6 +16,7 @@ class BallTrack(object):
         self.cv_op = CVOperations()
         self.output_window_name = 'Neato Camera Output'
         self.current_image = None
+        self.pixel_pos = None
 
     def trackbar(self):
         """Allows the user to dynamically adjust the parameters of the Hough Circles algorithm
@@ -61,7 +62,10 @@ class BallTrack(object):
         self.trackbar()
         while not rospy.is_shutdown():
             if self.current_image is not None:
-                circles = self.cv_op.detect_circles_np_array(self.current_image, self.output_window_name, wait=25)
+                circle = self.cv_op.detect_circles_np_array(self.current_image, self.output_window_name, wait=50)
+                if circle is not None:
+                    # Only update position if there is a detected ball.
+                    self.pixel_pos = circle
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
