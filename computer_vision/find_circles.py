@@ -34,8 +34,20 @@ class CVOperations(object):
         image = cv2.imread(image_name)
         self.detect_circles_np_array(image)
 
-    def most_likely_circle(self, circles):
-        pass
+    def most_likely_circle(self, circles, image, thresholds=np.array([0, 0, 100])):
+        if circles is None:
+            return None
+
+        for circle in circles:
+            circle = np.squeeze(circle)
+            pixels = self.histogram_colors_in_circle(image, circle)
+            if pixels:
+                average_color = np.mean(np.array(pixels), axis=0)
+                if (average_color > thresholds).all():
+                #if average_color[-1] >= 100:
+                    return circle.astype(np.int32)
+        
+        return None
 
     def histogram_colors_in_circle(self, image, circle):
         width, height, _ = image.shape
@@ -48,18 +60,23 @@ class CVOperations(object):
                 distance_squared = dx * dx + dy * dy
                 if distance_squared <= r * r:
                     pixels.append(image[i][j])
-        print(np.mean(np.array(pixels), axis=0))
         return pixels
 
     def detect_circles_np_array(self, image, output_name, wait=0):
+        circle = None
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, self.dp, self.min_dist)
         self.draw_circles_frame(circles, image)
+        if circles is not None:
+            circles = np.squeeze(circles, axis=0)
+            circle = self.most_likely_circle(circles, image, thresholds=np.array([0, 0, 100]))
+            if circle is not None:
+                self.draw_circle(circle, image, color=(0, 0, 255))
         cv2.imshow(output_name, image)
         cv2.waitKey(wait)
 
-        return circles
+        return circle
 
     def detect_circles_video(self):
         """Detect circles in a video using Hough Circles.
@@ -73,7 +90,10 @@ class CVOperations(object):
                 circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, self.dp, self.min_dist)
                 self.draw_circles_frame(circles, frame)
                 if circles is not None:
-                    self.histogram_colors_in_circle(frame, circles[0][0])
+                    circles = np.squeeze(circles, axis=0)
+                    circle = self.most_likely_circle(circles, frame, thresholds=np.array([0, 100, 0]))
+                    if circle is not None:
+                        self.draw_circle(circle, frame, color=(255, 0, 0))
                 cv2.imshow('frame', frame)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
