@@ -11,6 +11,8 @@ class CameraCalibrator():
     def __init__(self):
         rospy.init_node('camera_calibrator')
         self.K = [] # Initialize camera parameters    
+        self.camera_height = .15 # Height of camera off ground in meters
+
         # Subscriber accesses the camera info from the rostopic
         camera_sub = rospy.Subscriber('/camera/camera_info', CameraInfo, self.callback) 
         rospy.rostime.wallsleep(0.1) # waits to subscriber has time to access data
@@ -21,7 +23,6 @@ class CameraCalibrator():
         self.cx = self.K[2]
         self.cy = self.K[5]
 
-        self.camera_height = .15 # height of camera off ground in meters
     def callback(self, msg):
     	""" Callback function to store the calibration data """
         self.K = msg.K
