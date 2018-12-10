@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from sensor_msgs.msg import CameraInfo
-import time 
+import math
 
 class CameraCalibrator():
     """
@@ -27,13 +27,14 @@ class CameraCalibrator():
     	""" Callback function to store the calibration data """
         self.K = msg.K
 
-    def get_object_distance(self, radius_measured, y_img):
+    def get_object_distance(self, radius_measured, x_img, y_img):
         """ Find the distance to the object given the y value at which the object touches the ground """
         y_ground = y_img - radius_measured
-        z = (-self.camera_height * self.fy)/(y_ground - self.cy)
-        return z
+        z = (-self.camera_height * self.fy)/(y_ground - self.cy) # Distance to object
+        theta = math.atan(z/(x_img-cx)) # Angle of object relative to camera
+        return (z, theta)
+
 
 if __name__ == '__main__':
     c = CameraCalibrator()
-    print c.fy
 
