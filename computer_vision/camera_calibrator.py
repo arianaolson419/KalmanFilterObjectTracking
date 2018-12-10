@@ -11,7 +11,7 @@ class CameraCalibrator():
     def __init__(self):
         #rospy.init_node('camera_calibrator')
         self.K = [] # Initialize camera parameters    
-        self.camera_height = .15 # Height of camera off ground in meters
+        self.camera_height = 145. # Height of camera off ground in mm
 
         # Subscriber accesses the camera info from the rostopic
         camera_sub = rospy.Subscriber('/camera/camera_info', CameraInfo, self.callback) 
@@ -33,7 +33,7 @@ class CameraCalibrator():
         y_img = circle[1] # y pixel of center of ball
         r = circle[2] # radius of ball
 
-        y_ground = y_img - r
-        z = (-self.camera_height * self.fy)/(y_ground - self.cy) # Distance to object
-        theta = math.atan(z/(x_img-self.cx)) # Angle of object relative to camera
+        y_ground = y_img + r
+        z = (self.camera_height * self.fy)/(y_ground - self.cy) # Distance to object
+        theta = math.atan((x_img-self.cx)/z) # Angle of object relative to camera
         return (z, theta)

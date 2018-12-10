@@ -53,6 +53,9 @@ class BallTrack(object):
         def on_max_radius_trackbar(max_radius):
             self.cv_op.max_radius = max_radius
 
+        def on_height_trackbar(height):
+            self.calibrator.camera_height = height
+
         # Note: sliders use integer values, so user input may be altered before
         # the CVOperations object is updated.
         cv2.createTrackbar('dp', title_window , int(self.cv_op.dp * 10), 100, on_dp_trackbar)
@@ -64,11 +67,12 @@ class BallTrack(object):
         cv2.createTrackbar('blue', title_window, int(self.cv_op.color_thresholds[0]), 255, on_blue_trackbar)
         cv2.createTrackbar('green', title_window, int(self.cv_op.color_thresholds[1]), 255, on_green_trackbar)
         cv2.createTrackbar('red', title_window, int(self.cv_op.color_thresholds[2]), 255, on_red_trackbar)
+        cv2.createTrackbar('camera height', title_window, int(self.calibrator.camera_height), 200, on_height_trackbar)
 
 
     def get_image(self, img):
         img = self.bridge.imgmsg_to_cv2(img, desired_encoding="bgr8")
-        img = cv2.resize(img, (160, 120), interpolation=cv2.INTER_AREA)
+        #img = cv2.resize(img, (160, 120), interpolation=cv2.INTER_AREA)
         img = np.array(img)
         self.current_image = img
 
