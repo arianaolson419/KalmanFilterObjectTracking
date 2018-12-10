@@ -33,7 +33,8 @@ class CameraCalibrator():
         y_img = circle[1] # y pixel of center of ball
         r = circle[2] # radius of ball
 
-        y_ground = y_img + r
-        z = (self.camera_height * self.fy)/(y_ground - self.cy) # Distance to object
-        theta = math.atan((x_img-self.cx)/z) # Angle of object relative to camera
+        y_ground = y_img + r # y-value of pixel where ball is at ground height
+        z = (self.camera_height * self.fy)/(y_ground - self.cy) # z-axis distance to object 
+        x = ((x_img-self.cx)*z)/self.fx # x-axis distance to object
+
         return (z, theta)
