@@ -5,6 +5,7 @@ from sensor_msgs.msg import Image
 import cv2
 from cv_bridge import CvBridge
 from computer_vision.find_circles import CVOperations
+from computer_vision.camera_calibrator import CameraCalibrator
 
 class BallTrack(object):
     def __init__(self):
@@ -14,6 +15,7 @@ class BallTrack(object):
 
         self.bridge = CvBridge()
         self.cv_op = CVOperations()
+        self.calibrator = CameraCalibrator()
         self.output_window_name = 'Neato Camera Output'
         self.current_image = None
         self.pixel_pos = None
