@@ -9,7 +9,7 @@ class CameraCalibrator():
        values to find the real object location from the image data
     """
     def __init__(self):
-        rospy.init_node('camera_calibrator')
+        #rospy.init_node('camera_calibrator')
         self.K = [] # Initialize camera parameters    
         self.camera_height = .15 # Height of camera off ground in meters
 
@@ -33,7 +33,7 @@ class CameraCalibrator():
         y_img = circle[1] # y pixel of center of ball
         r = circle[2] # radius of ball
 
-        y_ground = y_img - radius_measured
+        y_ground = y_img - r
         z = (-self.camera_height * self.fy)/(y_ground - self.cy) # Distance to object
-        theta = math.atan(z/(x_img-cx)) # Angle of object relative to camera
+        theta = math.atan(z/(x_img-self.cx)) # Angle of object relative to camera
         return (z, theta)
