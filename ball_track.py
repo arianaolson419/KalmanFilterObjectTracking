@@ -10,7 +10,7 @@ class BallTrack(object):
     def __init__(self):
         rospy.init_node('ball_track')
 
-        self.camera_sub = rospy.Subscriber("/camera/image_raw", Image, self.find_circles)
+        self.camera_sub = rospy.Subscriber("/camera/image_raw", Image, self.get_image)
 
         self.bridge = CvBridge()
         self.cv_op = CVOperations()
@@ -23,6 +23,15 @@ class BallTrack(object):
         """
         title_window = self.output_window_name
         cv2.namedWindow(title_window)
+
+        def on_blue_trackbar(blue):
+            self.cv_op.color_thresholds[0] = blue
+
+        def on_green_trackbar(green):
+            self.cv_op.color_thresholds[1] = green
+
+        def on_red_trackbar(red):
+            self.cv_op.color_thresholds[2] = red
 
         def on_dp_trackbar(dp):
             self.cv_op.dp = max(0.001, dp / 10.)
@@ -50,8 +59,12 @@ class BallTrack(object):
         cv2.createTrackbar('param_two', title_window, int(self.cv_op.param_two), 500, on_param_two_trackbar)
         cv2.createTrackbar('min_radius', title_window, int(self.cv_op.min_radius), 160, on_min_radius_trackbar)
         cv2.createTrackbar('max_radius', title_window, int(self.cv_op.max_radius), 160, on_max_radius_trackbar)
+        cv2.createTrackbar('blue', title_window, int(self.cv_op.color_thresholds[0]), 255, on_blue_trackbar)
+        cv2.createTrackbar('green', title_window, int(self.cv_op.color_thresholds[1]), 255, on_green_trackbar)
+        cv2.createTrackbar('red', title_window, int(self.cv_op.color_thresholds[2]), 255, on_red_trackbar)
 
-    def find_circles(self, img):
+
+    def get_image(self, img):
         img = self.bridge.imgmsg_to_cv2(img, desired_encoding="bgr8")
         img = cv2.resize(img, (160, 120), interpolation=cv2.INTER_AREA)
         img = np.array(img)

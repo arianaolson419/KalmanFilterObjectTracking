@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import cv2
 
 class CVOperations(object):
-    def __init__(self, dp=1.2, min_dist=100, param_one=100, param_two=100, min_radius=0, max_radius=0):
+    def __init__(self, dp=1.2, min_dist=100, param_one=100, param_two=100, min_radius=0, max_radius=0, color_thresholds=np.array([100, 100, 100])):
         # See the documentation for OpenCV HoughCircles for an explanation of the parameters below.
         # https://docs.opencv.org/2.4/modules/imgproc/doc/feature_detection.html?highlight=houghcircles#houghcircles
         self.hough_method = cv2.HOUGH_GRADIENT
@@ -13,6 +13,7 @@ class CVOperations(object):
         self.param_two = param_two
         self.min_radius = min_radius
         self.max_radius = max_radius
+        self.color_thresholds = color_thresholds
 
     def set_dp(self, dp):
         self.dp = dp
@@ -34,7 +35,7 @@ class CVOperations(object):
         image = cv2.imread(image_name)
         self.detect_circles_np_array(image)
 
-    def most_likely_circle(self, circles, image, thresholds=np.array([0, 0, 100])):
+    def most_likely_circle(self, circles, image):
         if circles is None:
             return None
 
@@ -43,7 +44,7 @@ class CVOperations(object):
             pixels = self.histogram_colors_in_circle(image, circle)
             if pixels:
                 average_color = np.mean(np.array(pixels), axis=0)
-                if (average_color > thresholds).all():
+                if (average_color > self.color_thresholds).all():
                 #if average_color[-1] >= 100:
                     return circle.astype(np.int32)
         
@@ -70,7 +71,7 @@ class CVOperations(object):
         self.draw_circles_frame(circles, image)
         if circles is not None:
             circles = np.squeeze(circles, axis=0)
-            circle = self.most_likely_circle(circles, image, thresholds=np.array([0, 0, 100]))
+            circle = self.most_likely_circle(circles, image)
             if circle is not None:
                 self.draw_circle(circle, image, color=(0, 0, 255))
         cv2.imshow(output_name, image)
