@@ -27,14 +27,13 @@ class CameraCalibrator():
     	""" Callback function to store the calibration data """
         self.K = msg.K
 
-    def get_object_distance(self, radius_measured, x_img, y_img):
+    def get_object_distance(self, circle):
         """ Find the distance to the object given the y value at which the object touches the ground """
+        x_img = circle[0] # x pixel of center of ball
+        y_img = circle[1] # y pixel of center of ball
+        r = circle[2] # radius of ball
+
         y_ground = y_img - radius_measured
         z = (-self.camera_height * self.fy)/(y_ground - self.cy) # Distance to object
         theta = math.atan(z/(x_img-cx)) # Angle of object relative to camera
         return (z, theta)
-
-
-if __name__ == '__main__':
-    c = CameraCalibrator()
-
