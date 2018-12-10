@@ -6,12 +6,18 @@ import cv2
 from cv_bridge import CvBridge
 from computer_vision.find_circles import CVOperations
 from computer_vision.camera_calibrator import CameraCalibrator
+from filter.general_kalman_filter import GeneralKalmanFilter
 
 class BallTrack(object):
     def __init__(self):
         rospy.init_node('ball_track')
 
         self.camera_sub = rospy.Subscriber("/camera/image_raw", Image, self.get_image)
+
+        # Initialize Kalman Filter 
+        self.square = np.ones((2, 2)) # Generic matrix to be used as input for filter
+        diag = np.diag([1,1]) # Generic matrix for filter
+        self.kf = GeneralKalmanFilter(num_vars=2, state_covar=np.ones((2,)), process_covar=np.ones((2,)), process_transition_function=self.square, measurement_covar=diag, control_matrix=self.square)
 
         self.bridge = CvBridge()
         self.cv_op = CVOperations()
@@ -77,8 +83,9 @@ class BallTrack(object):
         self.current_image = img
 
     def run(self):
-        rospy.Rate(2)
+        r = rospy.Rate(10)
         self.trackbar()
+        filtered_measurements = []
         while not rospy.is_shutdown():
             if self.current_image is not None:
                 circle = self.cv_op.detect_circles_np_array(self.current_image, self.output_window_name, wait=50)
@@ -87,6 +94,13 @@ class BallTrack(object):
                     print("circle: ", circle)
                     self.ball_pos = self.calibrator.get_object_distance(circle)
                     print("distance: ", self.ball_pos)
+
+            if self.ball_pos is not None:
+                kf.predict(square)
+                kf.update(ball_pos)
+                filtered_measurements.append(kf.x)
+
+            r.sleep()
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":

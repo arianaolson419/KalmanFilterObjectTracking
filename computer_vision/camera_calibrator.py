@@ -37,4 +37,4 @@ class CameraCalibrator():
         z = (self.camera_height * self.fy)/(y_ground - self.cy) # z-axis distance to object 
         x = ((x_img-self.cx)*z)/self.fx # x-axis distance to object
 
-        return (z, theta)
+        return (x,z)
