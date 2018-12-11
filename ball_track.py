@@ -42,8 +42,8 @@ class BallTrack(object):
         state_covar = np.array([600 ** 2, 333 ** 2, 1800 ** 2, 333 ** 2]) 
 
         # Values to calculate predictions.
-        dt = 1. / 10.   # Seconds.
-        process_transition_function = np.array([[1, dt, 0, 0], [0, 1, 0, 0], [0, 0, 1, dt], [0, 0, 0, 1]])
+        self.dt = 1. / 10.   # Seconds.
+        process_transition_function = np.array([[1, self.dt, 0, 0], [0, 1, 0, 0], [0, 0, 1, self.dt], [0, 0, 0, 1]])
 
         self.spectral_density = 2.
         process_covar = calculate_process_covariance(self.dt, self.spectral_density)
@@ -68,8 +68,8 @@ class BallTrack(object):
         self.calibrator = CameraCalibrator()
         self.output_window_name = 'Neato Camera Output'
         self.current_image = None
-        self.ball_pos = None
-        self.ball_vel = None
+        self.ball_pos = np.array([initial_state[0], initial_state[2]])
+        self.ball_vel = np.array([initial_state[1], initial_state[3]])
 
     def trackbar(self):
         """Allows the user to dynamically adjust the parameters of the Hough Circles algorithm
@@ -145,12 +145,11 @@ class BallTrack(object):
                     self.ball_pos = new_pos
                     print("distance: ", self.ball_pos)
 
-            if self.ball_pos is not None:
-                measurement = np.array([self.ball_pos[0], self.ball_vel[0], self.ball_pos[1], self.ball_vel[1]])
-                self.kf.predict(np.zeros(self.num_vars))
-                self.kf.update(measurement)
-                filtered_measurements.append(self.kf.x)
-                print(self.kf.x)
+            measurement = np.array([self.ball_pos[0], self.ball_vel[0], self.ball_pos[1], self.ball_vel[1]])
+            self.kf.predict(np.zeros(self.num_vars))
+            self.kf.update(measurement)
+            filtered_measurements.append(self.kf.x)
+            print(self.kf.x)
 
             r.sleep()
         cv2.destroyAllWindows()
