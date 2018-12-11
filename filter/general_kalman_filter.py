@@ -20,7 +20,7 @@ class GeneralKalmanFilter():
             control_matrix: square matrix
         """
 
-        self.x = initial_state # state (initialized at zero) 
+        self.x = initial_state # state
         assert initial_state.shape[0] == num_vars, 'state must have the correct number of variables.'
         self.P = np.diag(state_covar)  # state covariance
         assert self.P.shape[0] == self.P.shape[1], 'state covariance must be a square matrix'
@@ -43,21 +43,21 @@ class GeneralKalmanFilter():
         # Calculate predicted state.
         assert self.B.shape[1] == u.shape[0], 'state and control input must be the same shape'
         assert self.x.shape[0] == self.B.shape[0], 'product of u and control matrix must be the same size as the state.'
-        self.x = self.F * self.x + self.B * u
+        self.x = np.matmul(self.F, self.x) + np.matmul(self.B, u)
 
         # Calculate belief in predicted state.
-        self.P = self.F * self.P * np.transpose(self.F) + self.Q
+        self.P = np.matmul(np.matmul(self.F, self.P), np.transpose(self.F)) + self.Q
     
     def update(self, z):
         """ 
             Calculate the residual and Kalman scaling factor 
             z: measurement
         """
-        S = np.dot(self.H, self.P).dot(self.H.T) + self.R
-        K = np.dot(self.P, self.H.T).dot(np.linalg.inv(S))
-        y = z - np.dot(self.H, self.x)
-        self.x += np.dot(K, y)
-        self.P = self.P - np.dot(np.dot(K, self.H), (self.P))
+        S = np.matmul(np.matmul(self.H, self.P), (self.H.T)) + self.R
+        K = np.matmul(np.matmul(self.P, self.H.T), (np.linalg.inv(S)))
+        y = z - np.matmul(self.H, self.x)
+        self.x += np.matmul(K, y)
+        self.P = self.P - np.matmul(np.matmul(K, self.H), (self.P))
 
 
 if __name__ == "__main__":
