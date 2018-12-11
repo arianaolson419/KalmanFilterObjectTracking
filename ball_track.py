@@ -96,9 +96,10 @@ class BallTrack(object):
                     print("distance: ", self.ball_pos)
 
             if self.ball_pos is not None:
-                kf.predict(square)
-                kf.update(ball_pos)
-                filtered_measurements.append(kf.x)
+                self.kf.predict(self.square)
+                self.kf.update(self.ball_pos)
+                filtered_measurements.append(self.kf.x)
+                print(self.kf.x)
 
             r.sleep()
         cv2.destroyAllWindows()
