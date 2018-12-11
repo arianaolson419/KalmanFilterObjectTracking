@@ -39,6 +39,7 @@ class BallTrack(object):
 
         # Estimate the initial state.
         initial_state = np.array([0, 0, 1000, 0])   # x, v_x, z, v_z in mm and mm/s
+        print('i state: ', initial_state.shape)
         state_covar = np.array([600 ** 2, 333 ** 2, 1800 ** 2, 333 ** 2]) 
 
         # Values to calculate predictions.
@@ -62,6 +63,7 @@ class BallTrack(object):
                 measurement_function=measurement_function,
                 measurement_covar=measurement_covar,
                 control_matrix=control_matrix)
+        print(self.kf.x.shape)
 
         self.bridge = CvBridge()
         self.cv_op = CVOperations()
@@ -148,8 +150,8 @@ class BallTrack(object):
             measurement = np.array([self.ball_pos[0], self.ball_vel[0], self.ball_pos[1], self.ball_vel[1]])
             self.kf.predict(np.zeros(self.num_vars))
             self.kf.update(measurement)
-            filtered_measurements.append(self.kf.x)
             print(self.kf.x)
+            filtered_measurements.append(self.kf.x)
 
             r.sleep()
         cv2.destroyAllWindows()
