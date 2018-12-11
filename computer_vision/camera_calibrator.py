@@ -35,6 +35,6 @@ class CameraCalibrator():
 
         y_ground = y_img + r # y-value of pixel where ball is at ground height
         z = (self.camera_height * self.fy)/(y_ground - self.cy) # z-axis distance to object 
-        x = ((x_img-self.cx)*z)/self.fx # x-axis distance to object
+        x = ((x_img-self.cx)*z)/...self.fx # x-axis distance to object
 
-        return (x,z)
+        return np.array([x,z])
