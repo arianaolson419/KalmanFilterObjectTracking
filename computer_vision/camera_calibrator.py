@@ -2,6 +2,7 @@
 import rospy
 from sensor_msgs.msg import CameraInfo
 import math
+import numpy as np
 
 class CameraCalibrator():
     """
@@ -35,6 +36,6 @@ class CameraCalibrator():
 
         y_ground = y_img + r # y-value of pixel where ball is at ground height
         z = (self.camera_height * self.fy)/(y_ground - self.cy) # z-axis distance to object 
-        x = ((x_img-self.cx)*z)/...self.fx # x-axis distance to object
+        x = ((x_img-self.cx)*z)/self.fx # x-axis distance to object
 
         return np.array([x,z])
