@@ -19,11 +19,19 @@ def compute_fake_data(self, z_var, process_var, count=1, dt=1.):
     return np.array(xs), np.array(zs)
 
 # Generic matrices to be used as input for filter
+initial_state = np.zeros(2,)
 square = np.ones((2, 2))
 diag = np.diag([1,1])
 
 # instantiate the general filter
-filter = general_kalman_filter.GeneralKalmanFilter(num_vars=2, state_covar=np.ones((2,)), process_covar=np.ones((2,)), process_transition_function=square, measurement_covar=diag, control_matrix=square)
+filter = general_kalman_filter.GeneralKalmanFilter(num_vars=2,
+        initial_state,
+        state_covar=np.ones((2,)),
+        process_covar=np.ones((2,)),
+        process_transition_function=square,
+        measurement_function=np.eye(2),
+        measurement_covar=diag,
+        control_matrix=square)
 
 # Create fake data and use filter on it
 track, zs = compute_fake_data(1, .01, 50)
