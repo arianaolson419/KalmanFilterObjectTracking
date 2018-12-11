@@ -24,7 +24,7 @@ class CameraCalibrator():
         self.cy = self.K[5]
 
     def callback(self, msg):
-    	""" Callback function to store the calibration data """
+        """ Callback function to store the calibration data """
         self.K = msg.K
 
     def get_object_distance(self, circle):
