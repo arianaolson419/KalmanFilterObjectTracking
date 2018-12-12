@@ -1,6 +1,8 @@
 import numpy as np
 import rospy
 from sensor_msgs.msg import Image
+from visualization_msgs.msg import Marker
+from geometry_msgs.msg import Point, Pose, Quaternion
 import matplotlib.pyplot as plt
 
 import cv2
@@ -33,6 +35,7 @@ class BallTrack(object):
         rospy.init_node('ball_track')
 
         self.camera_sub = rospy.Subscriber("/camera/image_raw", Image, self.get_image)
+        self.vis_pub = rospy.Publisher('/visualization_marker', Marker, queue_size=10)
 
         # Initialize Kalman Filter. 
         self.num_vars = 4   # The number of state variables.
@@ -131,6 +134,27 @@ class BallTrack(object):
         #img = cv2.resize(img, (160, 120), interpolation=cv2.INTER_AREA)
         img = np.array(img)
         self.current_image = img
+    
+    def visualize_ball_rviz(self):
+        """ Function to visualize the ball's expected location in rViz"""
+
+        # Define the ball's pose for rviz marker
+        ball_point = Point(self.kf.x[0]/1000, self.kf.x[2]/1000, 0) # Divide by 1000 to convert mm to m
+        ball_quaternion = Quaternion(0,0,0,0)
+        ball_pose = Pose(ball_point, ball_quaternion)
+
+        # Define the rviz marker's properties 
+        vis_msg = Marker()
+        vis_msg.pose = ball_pose
+        vis_msg.type = 2 # Sphere marker type
+        vis_msg.header.frame_id = "odom"
+        vis_msg.scale.x = 0.5
+        vis_msg.scale.y = 0.5
+        vis_msg.scale.z = 0.5
+        vis_msg.color.a = 1.0
+        vis_msg.color.r = 1.0
+        vis_msg.color.g = 0.0
+        vis_msg.color.b = 0.0
 
     def run(self):
         r = rospy.Rate(1. / self.dt)
@@ -161,6 +185,8 @@ class BallTrack(object):
             self.kf.update(measurement)
             print(self.kf.x)
             filtered_measurements.append(self.kf.x)
+
+            self.visualize_ball_rviz()
 
             r.sleep()
         cv2.destroyAllWindows()
