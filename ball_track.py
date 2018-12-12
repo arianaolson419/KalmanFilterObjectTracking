@@ -138,8 +138,6 @@ class BallTrack(object):
         times = []
         raw_measurements = []
         filtered_measurements = []
-        plt.ion()
-        graph = plt.plot(times, np.array(raw_measurements))[0]
         while not rospy.is_shutdown():
             if self.current_image is not None:
                 circle = self.cv_op.detect_circles_np_array(self.current_image, self.output_window_name, wait=50)
@@ -154,9 +152,6 @@ class BallTrack(object):
             measurement = np.array([self.ball_pos[0], self.ball_vel[0], self.ball_pos[1], self.ball_vel[1]])
             times.append(rospy.get_time())
             raw_measurements.append(measurement)
-            graph.set_xdata(times)
-            graph.set_ydata(np.array(raw_measurements)[:, 0])
-            plt.draw()
             self.kf.predict(np.zeros(self.num_vars))
             self.kf.update(measurement)
             print(self.kf.x)
