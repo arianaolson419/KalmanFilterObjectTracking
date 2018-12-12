@@ -35,7 +35,8 @@ class BallTrack(object):
         rospy.init_node('ball_track')
 
         self.camera_sub = rospy.Subscriber("/camera/image_raw", Image, self.get_image)
-        self.vis_pub = rospy.Publisher('/visualization_marker', Marker, queue_size=10)
+        self.vis_pub1 = rospy.Publisher('/visualization_marker1', Marker, queue_size=10)
+        self.vis_pub2 = rospy.Publisher('/visualization_marker2', Marker, queue_size=10)
 
         # Initialize Kalman Filter. 
         self.num_vars = 4   # The number of state variables.
@@ -138,10 +139,10 @@ class BallTrack(object):
 
         # Define the pose for rviz marker for predicted and measured ball locations
         ball_quaternion = Quaternion(0,0,0,0) # Neither ball has orientation, so both set to all zeros
-        measured_ball_point = Point(self.kf.x[0]/1000, self.kf.x[2]/1000, 0) # Divide by 1000 to convert mm to m
-        measured_ball_pose = Pose(measured_ball_point, ball_quaternion)
-        predicted_ball_point = Point(self.ball_pos[0]/1000, self.ball_pos[1]/1000, 0) 
-        predicted_ball_pose = Pose(predicted_ball_point, ball_quaternion)
+        predicted_ball_point = Point(self.kf.x[0]/1000, self.kf.x[2]/1000, 0) # Divide by 1000 to convert mm to m
+        predicted_ball_pose = Pose(ball_point, ball_quaternion)
+        measured_ball_point = Point(self.ball_pos[0]/1000, self.ball_pos[1]/1000, 0) 
+        measured_ball_pose = Pose(predicted_ball_point, ball_quaternion)
 
         # Define the predicted ball rviz marker's properties 
         vis_msg_pred = Marker()
@@ -155,7 +156,7 @@ class BallTrack(object):
         vis_msg_pred.color.r = 1.0
         vis_msg_pred.color.g = 0.0
         vis_msg_pred.color.b = 0.0
-        self.vis_pub.publish(vis_msg_pred)
+        self.vis_pub1.publish(vis_msg_pred)
 
         # Define the measured ball rviz marker's properties
         vis_msg_meas = Marker()
@@ -169,7 +170,7 @@ class BallTrack(object):
         vis_msg_meas.color.r = 0.0
         vis_msg_meas.color.g = 0.0
         vis_msg_meas.color.b = 1.0
-        self.vis_pub.publish(vis_msg_meas)
+        self.vis_pub2.publish(vis_msg_meas)
 
     def run(self):
         r = rospy.Rate(1. / self.dt)
