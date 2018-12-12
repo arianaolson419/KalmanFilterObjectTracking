@@ -135,26 +135,41 @@ class BallTrack(object):
         img = np.array(img)
         self.current_image = img
     
-    def visualize_ball_rviz(self):
+    def visualize_ball_rviz(self, measured_ball_pos):
         """ Function to visualize the ball's expected location in rViz"""
 
-        # Define the ball's pose for rviz marker
-        ball_point = Point(self.kf.x[0]/1000, self.kf.x[2]/1000, 0) # Divide by 1000 to convert mm to m
-        ball_quaternion = Quaternion(0,0,0,0)
-        ball_pose = Pose(ball_point, ball_quaternion)
+        # Define the pose for rviz marker for predicted and measured ball locations
+        ball_quaternion = Quaternion(0,0,0,0) # Neither ball has orientation, so both set to all zeros
+        measured_ball_point = Point(self.kf.x[0]/1000, self.kf.x[2]/1000, 0) # Divide by 1000 to convert mm to m
+        measured_ball_pose = Pose(ball_point, ball_quaternion)
+        predicted_ball_point = Point(self.ball_pos[0]/1000, self.ball_pos[1]/1000, 0) 
+        predicted_ball_pose = Pose(predicted_ball_point, ball_quaternion)
 
-        # Define the rviz marker's properties 
-        vis_msg = Marker()
-        vis_msg.pose = ball_pose
-        vis_msg.type = 2 # Sphere marker type
-        vis_msg.header.frame_id = "odom"
-        vis_msg.scale.x = 0.5
-        vis_msg.scale.y = 0.5
-        vis_msg.scale.z = 0.5
-        vis_msg.color.a = 1.0
-        vis_msg.color.r = 1.0
-        vis_msg.color.g = 0.0
-        vis_msg.color.b = 0.0
+        # Define the predicted ball rviz marker's properties 
+        vis_msg_pred = Marker()
+        vis_msg_pred.pose = predicted_ball_pose
+        vis_msg_pred.type = 2 # Sphere marker type
+        vis_msg_pred.header.frame_id = "odom"
+        vis_msg_pred.scale.x = 0.5
+        vis_msg_pred.scale.y = 0.5
+        vis_msg_pred.scale.z = 0.5
+        vis_msg_pred.color.a = 1.0
+        vis_msg_pred.color.r = 1.0
+        vis_msg_pred.color.g = 0.0
+        vis_msg_pred.color.b = 0.0
+        
+        # Define the measured ball rviz marker's properties
+        vis_msg_meas = Marker()
+        vis_msg_meas.pose = measured_ball_pose
+        vis_msg_meas.type = 2 # Sphere marker type
+        vis_msg_meas.header.frame_id = "odom"
+        vis_msg_meas.scale.x = 0.5
+        vis_msg_meas.scale.y = 0.5
+        vis_msg_meas.scale.z = 0.5
+        vis_msg_meas.color.a = 1.0
+        vis_msg_meas.color.r = 0.0
+        vis_msg_meas.color.g = 0.0
+        vis_msg_meas.color.b = 1.0
 
     def run(self):
         r = rospy.Rate(1. / self.dt)
