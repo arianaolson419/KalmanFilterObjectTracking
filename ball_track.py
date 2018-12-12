@@ -1,6 +1,7 @@
 import numpy as np
 import rospy
 from sensor_msgs.msg import Image
+import matplotlib.pyplot as plt
 
 import cv2
 from cv_bridge import CvBridge
@@ -26,7 +27,6 @@ def calculate_process_covariance(dt, spectral_density):
         [dt ** 2 / 2, dt, 0, 0],
         [0, 0, dt ** 3 / 3, dt ** 2 / 2],
         [0, 0, dt ** 2 / 2, dt]]) * spectral_density
-
 
 class BallTrack(object):
     def __init__(self):
@@ -135,7 +135,11 @@ class BallTrack(object):
     def run(self):
         r = rospy.Rate(1. / self.dt)
         self.trackbar()
+        times = []
+        raw_measurements = []
         filtered_measurements = []
+        plt.ion()
+        graph = plt.plot(times, np.array(raw_measurements))[0]
         while not rospy.is_shutdown():
             if self.current_image is not None:
                 circle = self.cv_op.detect_circles_np_array(self.current_image, self.output_window_name, wait=50)
@@ -148,6 +152,11 @@ class BallTrack(object):
                     print("distance: ", self.ball_pos)
 
             measurement = np.array([self.ball_pos[0], self.ball_vel[0], self.ball_pos[1], self.ball_vel[1]])
+            times.append(rospy.get_time())
+            raw_measurements.append(measurement)
+            graph.set_xdata(times)
+            graph.set_ydata(np.array(raw_measurements)[:, 0])
+            plt.draw()
             self.kf.predict(np.zeros(self.num_vars))
             self.kf.update(measurement)
             print(self.kf.x)
@@ -155,6 +164,7 @@ class BallTrack(object):
 
             r.sleep()
         cv2.destroyAllWindows()
+        np.savez('output_data', times, raw_measurements, filtered_measurements, times=times, raw=raw_measurements, filtered=filtered_measurements)
 
 if __name__ == "__main__":
     node = BallTrack()
