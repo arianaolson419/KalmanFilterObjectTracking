@@ -157,7 +157,8 @@ class BallTrack(object):
         vis_msg_pred.color.r = 1.0
         vis_msg_pred.color.g = 0.0
         vis_msg_pred.color.b = 0.0
-        
+        self.vis_pub.publish(vis_msg_pred)
+
         # Define the measured ball rviz marker's properties
         vis_msg_meas = Marker()
         vis_msg_meas.pose = measured_ball_pose
@@ -170,6 +171,7 @@ class BallTrack(object):
         vis_msg_meas.color.r = 0.0
         vis_msg_meas.color.g = 0.0
         vis_msg_meas.color.b = 1.0
+        self.vis_pub.publish(vis_msg_meas)
 
     def run(self):
         r = rospy.Rate(1. / self.dt)
