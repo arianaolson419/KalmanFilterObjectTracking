@@ -133,13 +133,13 @@ class BallTrack(object):
         img = np.array(img)
         self.current_image = img
     
-    def visualize_ball_rviz(self, measured_ball_pos):
+    def visualize_ball_rviz(self):
         """ Function to visualize the ball's expected location in rViz"""
 
         # Define the pose for rviz marker for predicted and measured ball locations
         ball_quaternion = Quaternion(0,0,0,0) # Neither ball has orientation, so both set to all zeros
         measured_ball_point = Point(self.kf.x[0]/1000, self.kf.x[2]/1000, 0) # Divide by 1000 to convert mm to m
-        measured_ball_pose = Pose(ball_point, ball_quaternion)
+        measured_ball_pose = Pose(measured_ball_point, ball_quaternion)
         predicted_ball_point = Point(self.ball_pos[0]/1000, self.ball_pos[1]/1000, 0) 
         predicted_ball_pose = Pose(predicted_ball_point, ball_quaternion)
 
