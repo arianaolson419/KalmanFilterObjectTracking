@@ -42,7 +42,6 @@ class BallTrack(object):
 
         # Estimate the initial state.
         initial_state = np.array([0, 0, 1000, 0])   # x, v_x, z, v_z in mm and mm/s
-        print('i state: ', initial_state.shape)
         state_covar = np.array([600 ** 2, 333 ** 2, 1800 ** 2, 333 ** 2]) 
 
         # Values to calculate predictions.
@@ -66,7 +65,6 @@ class BallTrack(object):
                 measurement_function=measurement_function,
                 measurement_covar=measurement_covar,
                 control_matrix=control_matrix)
-        print(self.kf.x.shape)
 
         self.bridge = CvBridge()
         self.cv_op = CVOperations()
@@ -167,18 +165,15 @@ class BallTrack(object):
                 circle = self.cv_op.detect_circles_np_array(self.current_image, self.output_window_name, wait=50)
                 if circle is not None:
                     # Only update position if there is a detected ball.
-                    print("circle: ", circle)
                     new_pos = self.calibrator.get_object_distance(circle)
                     self.ball_vel = (new_pos - self.ball_pos) / self.dt
                     self.ball_pos = new_pos
-                    print("distance: ", self.ball_pos)
 
             measurement = np.array([self.ball_pos[0], self.ball_vel[0], self.ball_pos[1], self.ball_vel[1]])
             times.append(rospy.get_time())
             raw_measurements.append(measurement)
             self.kf.predict(np.zeros(self.num_vars))
             self.kf.update(measurement)
-            print(self.kf.x)
             filtered_measurements.append(self.kf.x)
 
             self.visualize_ball_rviz()
