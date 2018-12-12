@@ -43,7 +43,8 @@ class BallTrack(object):
 
         # Estimate the initial state.
         initial_state = np.array([0, 0, 1000, 0])   # x, v_x, z, v_z in mm and mm/s
-        state_covar = np.array([600 ** 2, 333 ** 2, 1800 ** 2, 333 ** 2]) 
+        state_covar = np.array([300 ** 2, 333 ** 2, 900 ** 2, 333 ** 2]) 
+        #state_covar = np.array([600 ** 2, 333 ** 2, 1800 ** 2, 333 ** 2]) 
 
         # Values to calculate predictions.
         self.dt = 1. / 10.   # Seconds.
@@ -139,10 +140,10 @@ class BallTrack(object):
 
         # Define the pose for rviz marker for predicted and measured ball locations
         ball_quaternion = Quaternion(0,0,0,0) # Neither ball has orientation, so both set to all zeros
-        predicted_ball_point = Point(self.kf.x[0]/1000, self.kf.x[2]/1000, 0) # Divide by 1000 to convert mm to m
-        predicted_ball_pose = Pose(ball_point, ball_quaternion)
-        measured_ball_point = Point(self.ball_pos[0]/1000, self.ball_pos[1]/1000, 0) 
-        measured_ball_pose = Pose(predicted_ball_point, ball_quaternion)
+        measured_ball_point = Point(self.kf.x[0]/1000, self.kf.x[2]/1000, 0) # Divide by 1000 to convert mm to m
+        measured_ball_pose = Pose(measured_ball_point, ball_quaternion)
+        predicted_ball_point = Point(self.ball_pos[0]/1000, self.ball_pos[1]/1000, 0) 
+        predicted_ball_pose = Pose(predicted_ball_point, ball_quaternion)
 
         # Define the predicted ball rviz marker's properties 
         vis_msg_pred = Marker()
