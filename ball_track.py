@@ -1,14 +1,16 @@
+import cv2
+import matplotlib.pyplot as plt
 import numpy as np
+
+from cv_bridge import CvBridge
 import rospy
+from geometry_msgs.msg import Point, Pose, Quaternion
+from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Image
 from visualization_msgs.msg import Marker
-from geometry_msgs.msg import Point, Pose, Quaternion
-import matplotlib.pyplot as plt
 
-import cv2
-from cv_bridge import CvBridge
-from computer_vision.find_circles import CVOperations
 from computer_vision.camera_calibrator import CameraCalibrator
+from computer_vision.find_circles import CVOperations
 from filter.general_kalman_filter import GeneralKalmanFilter
 
 def calculate_process_covariance(dt, spectral_density):
@@ -35,8 +37,13 @@ class BallTrack(object):
         rospy.init_node('ball_track')
 
         self.camera_sub = rospy.Subscriber("/camera/image_raw", Image, self.get_image)
+        self.twist_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.vis_pub1 = rospy.Publisher('/visualization_marker1', Marker, queue_size=10)
         self.vis_pub2 = rospy.Publisher('/visualization_marker2', Marker, queue_size=10)
+
+        self.twist = Twist()
+        self.max_speed = 0.15
+        self.target_z = 100
 
         # Initialize Kalman Filter. 
         self.num_vars = 4   # The number of state variables.
@@ -57,7 +64,8 @@ class BallTrack(object):
         measurement_function = np.eye(self.num_vars)
         measurement_covar = np.array([100 ** 2, 20 ** 2, 200 ** 2, 40 ** 2])
 
-        control_matrix = np.zeros((self.num_vars, self.num_vars))
+        lin_scale = 970.0
+        control_matrix = np.array([[0], [0], [-lin_scale * self.dt], [-lin_scale]])
 
         self.kf = GeneralKalmanFilter(num_vars=self.num_vars,
                 initial_state=initial_state,
@@ -135,6 +143,16 @@ class BallTrack(object):
         img = np.array(img)
         self.current_image = img
     
+    def move_to_ball(self):
+        max_error = 50
+        kp = 0.05
+        error = self.kf.x[3] - self.target_z
+        if np.abs(error) < max_error:
+            self.twist.linear.x = 0
+        else:
+            self.twist.linear.x = np.sign(error) * min(self.max_speed, np.abs(error) * kp)
+        self.twist_pub.publish(self.twist)
+
     def visualize_ball_rviz(self):
         """ Function to visualize the ball's expected location in rViz"""
 
@@ -191,8 +209,10 @@ class BallTrack(object):
             measurement = np.array([self.ball_pos[0], self.ball_vel[0], self.ball_pos[1], self.ball_vel[1]])
             times.append(rospy.get_time())
             raw_measurements.append(measurement)
-            self.kf.predict(np.zeros(self.num_vars))
+            u = np.array([self.twist.linear.x])
+            self.kf.predict(u)
             self.kf.update(measurement)
+            self.move_to_ball()
             filtered_measurements.append(self.kf.x)
 
             self.visualize_ball_rviz()
@@ -200,6 +220,8 @@ class BallTrack(object):
             r.sleep()
         cv2.destroyAllWindows()
         np.savez('output_data', times, raw_measurements, filtered_measurements, times=times, raw=raw_measurements, filtered=filtered_measurements)
+        self.twist.linear.x = 0
+        self.twist_pub.publish(self.twist)
 
 if __name__ == "__main__":
     node = BallTrack()
