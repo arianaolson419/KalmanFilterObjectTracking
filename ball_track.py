@@ -57,12 +57,13 @@ class BallTrack(object):
         self.dt = 1. / 10.   # Seconds.
         process_transition_function = np.array([[1, self.dt, 0, 0], [0, 1, 0, 0], [0, 0, 1, self.dt], [0, 0, 0, 1]])
 
-        self.spectral_density = 2.
+        self.spectral_density = 0.5
         process_covar = calculate_process_covariance(self.dt, self.spectral_density)
 
         # Values to update prediction with measurement.
         measurement_function = np.eye(self.num_vars)
-        measurement_covar = np.array([100 ** 2, 20 ** 2, 200 ** 2, 40 ** 2])
+        # measurement_covar = np.array([100 ** 2, 20 ** 2, 200 ** 2, 40 ** 2])
+        measurement_covar = np.array([40 ** 2, 20 ** 2, 70 ** 2, 40 ** 2])
 
         lin_scale = 970.0
         control_matrix = np.array([[0], [0], [-lin_scale * self.dt], [-lin_scale]])
@@ -145,12 +146,14 @@ class BallTrack(object):
     
     def move_to_ball(self):
         max_error = 50
-        kp = 0.05
+        kp = 0.5
         error = self.kf.x[3] - self.target_z
         if np.abs(error) < max_error:
             self.twist.linear.x = 0
         else:
+            print 'movement attempt'
             self.twist.linear.x = np.sign(error) * min(self.max_speed, np.abs(error) * kp)
+            print self.twist.linear.x
         self.twist_pub.publish(self.twist)
 
     def visualize_ball_rviz(self):
@@ -202,26 +205,26 @@ class BallTrack(object):
         while not rospy.is_shutdown():
             if self.current_image is not None:
                 circle = self.cv_op.detect_circles_np_array(self.current_image, self.output_window_name, wait=50)
-                circle_radius = circle[2]
                 if circle is not None:
                     # Only update position if there is a detected ball.
                     new_pos = self.calibrator.get_object_distance(circle)
                     self.ball_vel = (new_pos - self.ball_pos) / self.dt
                     self.ball_pos = new_pos
+                    circle_radius = circle[2]
 
             measurement = np.array([self.ball_pos[0], self.ball_vel[0], self.ball_pos[1], self.ball_vel[1]])
             times.append(rospy.get_time())
             raw_measurements.append(measurement)
             u = np.array([self.twist.linear.x])
-            self.kf.predict(u)
+            predicted_state = self.kf.predict(u)
             model_predictions.append(self.kf.x)
             self.kf.update(measurement)
-            #self.move_to_ball()
-            filtered_measurements.append(self.kf.x)
+            self.move_to_ball()
 
             estimated_circle = self.calibrator.get_circle_pixel_location(self.kf.x[0], self.kf.x[2], circle_radius)
             self.cv_op.draw_circle(estimated_circle, self.current_image, color=(255, 0, 0))
             self.visualize_ball_rviz()
+            filtered_measurements.append(self.kf.x)
 
             r.sleep()
         cv2.destroyAllWindows()
