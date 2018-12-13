@@ -8,10 +8,6 @@ from geometry_msgs.msg import Point, Pose, Quaternion
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Image
 from visualization_msgs.msg import Marker
-from geometry_msgs.msg import Point, Pose, Quaternion, Vector3
-from nav_msgs.msg import Odometry
-from scripts.helper_functions import TFHelper
-import matplotlib.pyplot as plt
 
 from computer_vision.camera_calibrator import CameraCalibrator
 from computer_vision.find_circles import CVOperations
@@ -83,13 +79,10 @@ class BallTrack(object):
         self.bridge = CvBridge()
         self.cv_op = CVOperations()
         self.calibrator = CameraCalibrator()
-        self.transform_helper = TFHelper()
-
         self.output_window_name = 'Neato Camera Output'
         self.current_image = None
         self.ball_pos = np.array([initial_state[0], initial_state[2]])
         self.ball_vel = np.array([initial_state[1], initial_state[3]])
-        self.neato_pos = Vector3(0, 0, 0)
 
     def trackbar(self):
         """Allows the user to dynamically adjust the parameters of the Hough Circles algorithm
@@ -162,16 +155,13 @@ class BallTrack(object):
 
     def visualize_ball_rviz(self):
         """ Function to visualize the ball's expected location in rViz"""
-        
-        # Get ball location
-        rospy.Subscriber('/odom', Odometry, self.odometry_callback)
 
-        # Define the pose for rviz marker for predicted and measured ball locations, relative to neato in mm
+        # Define the pose for rviz marker for predicted and measured ball locations
         ball_quaternion = Quaternion(0,0,0,0) # Neither ball has orientation, so both set to all zeros
-        predicted_ball_point = Point((self.kf.x[0]-self.neato_pos[0])/1000, (self.kf.x[2]-self.neato_pos[1])/1000, 0) 
-        predicted_ball_pose = Pose(ball_point, ball_quaternion)
-        measured_ball_point = Point((self.ball_pos[0]-self.neato_pos[0])/1000, (self.ball_pos[1]-self.neato_pos[0])/1000, 0) 
-        measured_ball_pose = Pose(predicted_ball_point, ball_quaternion)
+        measured_ball_point = Point(self.kf.x[0]/1000, self.kf.x[2]/1000, 0) # Divide by 1000 to convert mm to m
+        measured_ball_pose = Pose(measured_ball_point, ball_quaternion)
+        predicted_ball_point = Point(self.ball_pos[0]/1000, self.ball_pos[1]/1000, 0) 
+        predicted_ball_pose = Pose(predicted_ball_point, ball_quaternion)
 
         # Define the predicted ball rviz marker's properties 
         vis_msg_pred = Marker()
@@ -201,20 +191,17 @@ class BallTrack(object):
         vis_msg_meas.color.b = 1.0
         self.vis_pub2.publish(vis_msg_meas)
 
-    def odometry_callback(self, msg):
-        """ Callback function to set neato's position to  """
-        transformed_pos = self.transform_helper.convert_pose_to_xy_and_theta(msg.pose.pose) # transform to x,y,yaw
-        self.neato_pos = Vector3(transformed_pos[0], transformed_pos[1], math.degrees(transformed_pos[2]))
-
     def run(self):
         r = rospy.Rate(1. / self.dt)
         self.trackbar()
         times = []
         raw_measurements = []
         filtered_measurements = []
+        circle_radius = 0
         while not rospy.is_shutdown():
             if self.current_image is not None:
                 circle = self.cv_op.detect_circles_np_array(self.current_image, self.output_window_name, wait=50)
+                circle_radius = circle[2]
                 if circle is not None:
                     # Only update position if there is a detected ball.
                     new_pos = self.calibrator.get_object_distance(circle)
@@ -227,9 +214,11 @@ class BallTrack(object):
             u = np.array([self.twist.linear.x])
             self.kf.predict(u)
             self.kf.update(measurement)
-            self.move_to_ball()
+            #self.move_to_ball()
             filtered_measurements.append(self.kf.x)
 
+            estimated_circle = self.calibrator.get_circle_pixel_location(self.kf.x[0], self.kf.x[2], circle_radius)
+            self.cv_op.draw_circle(estimated_circle, self.current_image, color=(255, 0, 0))
             self.visualize_ball_rviz()
 
             r.sleep()
