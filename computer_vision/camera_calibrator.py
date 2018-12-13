@@ -45,6 +45,6 @@ class CameraCalibrator():
         y_ground = ((self.camera_height * self.fy)/kf_z) + self.cy # y-value of bottom pixel of ball
         y_img = y_ground - radius # y-value of center pixel of ball
 
-        x_img = ((kf_x * self.fx)/z) + self.cx 
+        x_img = ((kf_x * self.fx)/kf_z) + self.cx 
 
-        return (x_img, y_img, radius)
+        return (int(x_img), int(y_img), radius)

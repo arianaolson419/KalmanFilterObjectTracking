@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import cv2
 
 class CVOperations(object):
-    def __init__(self, dp=1.2, min_dist=100, param_one=100, param_two=100, min_radius=0, max_radius=0, color_thresholds=np.array([100, 100, 100])):
+    def __init__(self, dp=1.2, min_dist=100, param_one=100, param_two=100, min_radius=0, max_radius=0, color_thresholds=np.array([40, 40, 100])):
         # See the documentation for OpenCV HoughCircles for an explanation of the parameters below.
         # https://docs.opencv.org/2.4/modules/imgproc/doc/feature_detection.html?highlight=houghcircles#houghcircles
         self.hough_method = cv2.HOUGH_GRADIENT
