@@ -39,3 +39,12 @@ class CameraCalibrator():
         x = ((x_img-self.cx)*z)/self.fx # x-axis distance to object
 
         return np.array([x,z])
+
+    def get_circle_pixel_location(self, kf_x, kf_z, radius):
+        """ Calculate the position of the circle in the image from data about the distance of the ball """
+        y_ground = ((self.camera_height * self.fy)/kf_z) + self.cy # y-value of bottom pixel of ball
+        y_img = y_ground - radius # y-value of center pixel of ball
+
+        x_img = ((kf_x * self.fx)/z) + self.cx 
+
+        return (x_img, y_img, radius)
