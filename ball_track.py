@@ -196,6 +196,7 @@ class BallTrack(object):
         self.trackbar()
         times = []
         raw_measurements = []
+        model_predictions = []
         filtered_measurements = []
         circle_radius = 0
         while not rospy.is_shutdown():
@@ -213,6 +214,7 @@ class BallTrack(object):
             raw_measurements.append(measurement)
             u = np.array([self.twist.linear.x])
             self.kf.predict(u)
+            model_predictions.append(self.kf.x)
             self.kf.update(measurement)
             #self.move_to_ball()
             filtered_measurements.append(self.kf.x)
@@ -223,7 +225,7 @@ class BallTrack(object):
 
             r.sleep()
         cv2.destroyAllWindows()
-        np.savez('output_data', times, raw_measurements, filtered_measurements, times=times, raw=raw_measurements, filtered=filtered_measurements)
+        np.savez('output_data', times, raw_measurements, filtered_measurements, model_predictions, times=times, raw=raw_measurements, filtered=filtered_measurements, predicted=model_predictions)
         self.twist.linear.x = 0
         self.twist_pub.publish(self.twist)
 
