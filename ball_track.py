@@ -42,8 +42,8 @@ class BallTrack(object):
         self.vis_pub2 = rospy.Publisher('/visualization_marker2', Marker, queue_size=10)
 
         self.twist = Twist()
-        self.max_speed = 0.15
-        self.target_z = 100
+        self.max_speed = 0.05
+        self.target_z = 400
 
         # Initialize Kalman Filter. 
         self.num_vars = 4   # The number of state variables.
@@ -62,8 +62,8 @@ class BallTrack(object):
 
         # Values to update prediction with measurement.
         measurement_function = np.eye(self.num_vars)
-        # measurement_covar = np.array([100 ** 2, 20 ** 2, 200 ** 2, 40 ** 2])
-        measurement_covar = np.array([40 ** 2, 20 ** 2, 70 ** 2, 40 ** 2])
+        #measurement_covar = np.array([100 ** 2, 20 ** 2, 200 ** 2, 40 ** 2])
+        measurement_covar = np.array([1 ** 2, 2 ** 2, 7 ** 2, 4 ** 2])
 
         lin_scale = 970.0
         control_matrix = np.array([[0], [0], [-lin_scale * self.dt], [-lin_scale]])
@@ -146,14 +146,12 @@ class BallTrack(object):
     
     def move_to_ball(self):
         max_error = 50
-        kp = 0.5
+        kp = 0.0005
         error = self.kf.x[3] - self.target_z
         if np.abs(error) < max_error:
             self.twist.linear.x = 0
         else:
-            print 'movement attempt'
             self.twist.linear.x = np.sign(error) * min(self.max_speed, np.abs(error) * kp)
-            print self.twist.linear.x
         self.twist_pub.publish(self.twist)
 
     def visualize_ball_rviz(self):
@@ -211,6 +209,11 @@ class BallTrack(object):
                     self.ball_vel = (new_pos - self.ball_pos) / self.dt
                     self.ball_pos = new_pos
                     circle_radius = circle[2]
+                else:
+                    self.ball_pos[0] = np.random.normal(self.ball_pos[0], np.abs(self.ball_pos[0]) * 0.05)
+                    self.ball_pos[1] = np.random.normal(self.ball_pos[1], np.abs(self.ball_pos[1]) * 0.05)
+                    self.ball_vel[0] = np.random.normal(self.ball_vel[0], np.abs(self.ball_vel[0]) * 0.05)
+                    self.ball_vel[1] = np.random.normal(self.ball_vel[1], np.abs(self.ball_vel[1]) * 0.05)
 
             measurement = np.array([self.ball_pos[0], self.ball_vel[0], self.ball_pos[1], self.ball_vel[1]])
             times.append(rospy.get_time())
