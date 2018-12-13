@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_measurements(time, measured_states, kalman_states):
+def plot_measurements(time, measured_states, kalman_states, kalman_predictions):
     plt.subplot(221)
     plt.plot(time, measured_states[:, 0], label='raw x')
+    plt.plot(time, kalman_predictions[:, 0], label='predicted x')
     plt.plot(time, kalman_states[:, 0], label='filtered x')
     plt.legend()
     plt.title('x position')
@@ -12,6 +13,7 @@ def plot_measurements(time, measured_states, kalman_states):
 
     plt.subplot(222)
     plt.plot(time, measured_states[:, 2], label='raw z')
+    plt.plot(time, kalman_predictions[:, 2], label='predicted z')
     plt.plot(time, kalman_states[:, 2], label='filtered z')
     plt.legend()
     plt.title('z position')
@@ -20,6 +22,7 @@ def plot_measurements(time, measured_states, kalman_states):
 
     plt.subplot(223)
     plt.plot(time, measured_states[:, 1], label='raw v_x')
+    plt.plot(time, kalman_predictions[:, 1], label='predicted v_x')
     plt.plot(time, kalman_states[:, 1], label='filtered v_x')
     plt.legend()
     plt.title('x velocity')
@@ -28,6 +31,7 @@ def plot_measurements(time, measured_states, kalman_states):
 
     plt.subplot(224)
     plt.plot(time, measured_states[:, 3], label='raw v_z')
+    plt.plot(time, kalman_predictions[:, 3], label='predicted v_z')
     plt.plot(time, kalman_states[:, 3], label='filtered v_z')
     plt.legend()
     plt.title('z velocity')
@@ -41,4 +45,5 @@ if __name__ == "__main__":
     times = data['times']
     raw = data['raw']
     filtered = data['filtered']
-    plot_measurements(times, raw, filtered)
+    predictions = data['predicted']
+    plot_measurements(times, raw, filtered, predictions)
