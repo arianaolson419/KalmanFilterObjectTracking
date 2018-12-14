@@ -1,6 +1,4 @@
 # Kalman Filters for Object Tracking
-Please see our [website](https://arianaolson419.github.io/KalmanFilterObjectTracking/) if you'd like more details about this project and how it came about.
-
 The main class for this project is located in [ball_track.py](https://github.com/arianaolson419/KalmanFilterObjectTracking/blob/master/ball_track.py). Running this python code will start up the program. 
 
 Please note that this code is configured to work with Olin’s Neato robots. For help setting up a ROS environment and connecting to Neatos please see: https://sites.google.com/site/comprobo18/how-to/neato-etiquette and https://sites.google.com/site/comprobo18/how-to/setting-up-your-environment
@@ -25,3 +23,5 @@ To save the filter data:
 The timestamps of the data points, the raw ball location measurements, and the filtered data are saved in output_data.npz. To view the plots of the data, run
 ```python2 plot_measurements.py```
 A figure will appear with a subplot of the data for each of the states tracked by the Kalman filter.
+
+Please see our [website](https://arianaolson419.github.io/KalmanFilterObjectTracking/) if you'd like more details about this project, the process of developing it, or how it works.
