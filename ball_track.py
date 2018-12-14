@@ -1,3 +1,5 @@
+import argparse
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,6 +14,8 @@ from visualization_msgs.msg import Marker
 from computer_vision.camera_calibrator import CameraCalibrator
 from computer_vision.find_circles import CVOperations
 from filter.general_kalman_filter import GeneralKalmanFilter
+
+FLAGS = None
 
 def calculate_process_covariance(dt, spectral_density):
     """
@@ -42,7 +46,7 @@ class BallTrack(object):
         self.vis_pub2 = rospy.Publisher('/visualization_marker2', Marker, queue_size=10)
 
         self.twist = Twist()
-        self.max_speed = 0.05
+        self.max_speed = 0.1
         self.target_z = 400
 
         # Initialize Kalman Filter. 
@@ -168,7 +172,7 @@ class BallTrack(object):
         vis_msg_pred = Marker()
         vis_msg_pred.pose = predicted_ball_pose
         vis_msg_pred.type = 2 # Sphere marker type
-        vis_msg_pred.header.frame_id = "odom"
+        vis_msg_pred.header.frame_id = "base_link"
         vis_msg_pred.scale.x = 0.5
         vis_msg_pred.scale.y = 0.5
         vis_msg_pred.scale.z = 0.5
@@ -216,26 +220,46 @@ class BallTrack(object):
                     self.ball_vel[1] = np.random.normal(self.ball_vel[1], np.abs(self.ball_vel[1]) * 0.05)
 
             measurement = np.array([self.ball_pos[0], self.ball_vel[0], self.ball_pos[1], self.ball_vel[1]])
-            times.append(rospy.get_time())
-            raw_measurements.append(measurement)
+            if FLAGS.save_data:
+                times.append(rospy.get_time())
+                raw_measurements.append(measurement)
+
             u = np.array([self.twist.linear.x])
             predicted_state = self.kf.predict(u)
-            model_predictions.append(self.kf.x)
+
+            if FLAGS.save_data:
+                model_predictions.append(predicted_state)
             self.kf.update(measurement)
-            self.move_to_ball()
+
+            if FLAGS.drive:
+                self.move_to_ball()
 
             estimated_circle = self.calibrator.get_circle_pixel_location(self.kf.x[0], self.kf.x[2], circle_radius)
             self.cv_op.draw_circle(estimated_circle, self.current_image, color=(255, 0, 0))
             self.visualize_ball_rviz()
-            filtered_measurements.append(self.kf.x)
+
+            if FLAGS.save_data:
+                filtered_measurements.append(self.kf.x)
 
             r.sleep()
         cv2.destroyAllWindows()
-        np.savez('output_data', times, raw_measurements, filtered_measurements, model_predictions, times=times, raw=raw_measurements, filtered=filtered_measurements, predicted=model_predictions)
-        self.twist.linear.x = 0
-        self.twist_pub.publish(self.twist)
+
+        if FLAGS.save_data:
+            np.savez('output_data',
+                    times,
+                    raw_measurements,
+                    filtered_measurements,
+                    model_predictions,
+                    times=times,
+                    raw=raw_measurements,
+                    filtered=filtered_measurements,
+                    predicted=model_predictions)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--drive', type=bool, default=False, help="Allow robot to drive around.")
+    parser.add_argument('--save_data', type=bool, default=False, help="Save data as a .npz file.")
+    FLAGS, _ = parser.parse_known_args()
     node = BallTrack()
     node.run()
 
