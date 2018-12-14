@@ -130,6 +130,7 @@ class BallTrack(object):
         # Note: sliders use integer values, so user input may be altered before
         # the CVOperations object is updated.
         cv2.createTrackbar('dp', title_window , int(self.cv_op.dp * 10), 100, on_dp_trackbar)
+        cv2.createTrackbar('dp', title_window , 18, 100, on_dp_trackbar)
         cv2.createTrackbar('min_dist', title_window, int(self.cv_op.min_dist), 160, on_min_dist_trackbar)
         cv2.createTrackbar('param_one', title_window, int(self.cv_op.param_one), 500, on_param_one_trackbar)
         cv2.createTrackbar('param_two', title_window, int(self.cv_op.param_two), 500, on_param_two_trackbar)
@@ -246,7 +247,6 @@ class BallTrack(object):
                     times,
                     raw_measurements,
                     filtered_measurements,
-                    model_predictions,
                     times=times,
                     raw=raw_measurements,
                     filtered=filtered_measurements)
