@@ -70,20 +70,25 @@ To validate the estimated location of the ball calculated by our Kalman Filter, 
 
 Below, we include results of different tests using our filter to track a ball’s movement represented through these different forms.
 
-![gif of the raw measurement and filtered measurement in rviz](rviz_demo.gif)
+![gif of the raw measurement and filtered measurement in rviz](images/rviz_demo.gif)
 
-*In this rviz demonstration, the red sphere represents the raw measurement of the ball location and the blue sphere represents the filtered measurement. The robot is tracking a ball being moved slowly back and forth.*
+*In this RViz visualization, the red sphere corresponds to the measured ball location while the blue sphere corresponds to the filter’s estimate. When this first begins, the estimate is so close to the real measurement value that the spheres heavily overlap. The ball then begins to move away from the Neato, which the filter is slightly delayed in tracking because it is predicting that the ball’s velocity will remain at zero. Noticeably, there was a fair amount of noise in the measurements as the ball moved away from the Neato. This can be seen by the jerking about of the red sphere, while the blue sphere has a somewhat smoother movement. The spheres then move off screen as the ball moves too far to be shown in RViz before moving back towards the Neato.*
 
 ![gif showing the video output of the robot moving as it tries to maintain a fixed distance from the ball](images/stationary_ball.gif)
 
-*Video output of the Neato trying to maintain a fixed distance from a stationary ball.*
+*In this gif, the red circle corresponds to the measured ball location while the blue circle corresponds to the estimated location from the filter. The video feed is taken from the Neato trying to maintain a fixed distance from the stationary soccer ball. Note that a lot of noise is introduced by the Neato sending frames of video that do not contain useful data. The filtered data quickly catches up to the measured location after instances of the video cutting out, but this results in the Neato moving to accommodate perceived changes in the ball’s position.*
 
 ![gif of the video output of the robot tracking a ball being rolled around](images/moving_ball.gif)
 
-*Video output of the robot tracking the ball being moved around. Notice how the predictive model causes the filter to deviate from the measurement when the ball accelerates suddenly*
+*In this gif, the red circle corresponds to the measured ball location while the blue circle corresponds to the estimated location of the filter. Note that when the ball is stopped from moving forward anymore, the blue circle continues to move forward because the filter predicts that the ball will continue travelling at its current velocity. The blue circle then begins to move backwards because the filter corrects itself when its prediction of the system’s state differs too heavily from the measurement. The blue circle then tracks the measured red circle fairly well as it moves away from the camera. *
 
 ![Plots of the raw and filtered position and velocity of the ball](images/all_states_plots.png)
+
+*In this test of our system, one of our measured values (at ~t=45) was a very large outlier, which highlights some interesting behaviors of our system. Although these outliers are cut off in the graph because they were so extreme, the x-position shot down to -4,000 and the z-position shot down to -45,000. Because these were such extreme jumps, our filter did not update its state to follow these predictions very heavily. However, we did see a spike at these points because we wanted our filter to be somewhat susceptible to large changes, such as when the ball starts moving from a still position. This plot also demonstrates the smoothing nature of our filter at the beginning and end of the measured time steps. *
+
 ![Plots of the raw and filered velocity of the ball.](images/velocity_only_plots.png)
+
+*In the plot above, the smoothing of a very noisy velocity curve is very apparent. Because of the noise inherent to the system, the measured velocity was often extremely off from reasonable values. So, we made sure that our filter was not very susceptible to large spikes in velocity data. This is in contrast to the design of our positional state updates, which was less prone to random spikes because of noise. *
 
 ### Lessons Learned
 
