@@ -201,7 +201,6 @@ class BallTrack(object):
         self.trackbar()
         times = []
         raw_measurements = []
-        model_predictions = []
         filtered_measurements = []
         circle_radius = 0
         while not rospy.is_shutdown():
@@ -225,10 +224,8 @@ class BallTrack(object):
                 raw_measurements.append(measurement)
 
             u = np.array([self.twist.linear.x])
-            predicted_state = self.kf.predict(u)
+            self.kf.predict(u)
 
-            if FLAGS.save_data:
-                model_predictions.append(predicted_state)
             self.kf.update(measurement)
 
             if FLAGS.drive:
@@ -252,8 +249,7 @@ class BallTrack(object):
                     model_predictions,
                     times=times,
                     raw=raw_measurements,
-                    filtered=filtered_measurements,
-                    predicted=model_predictions)
+                    filtered=filtered_measurements)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
