@@ -84,11 +84,11 @@ Below, we include results of different tests using our filter to track a ball’
 
 ![Plots of the raw and filtered position and velocity of the ball](images/all_states_plots.png)
 
-*In this test of our system, one of our measured values (at ~t=45) was a very large outlier, which highlights some interesting behaviors of our system. Although these outliers are cut off in the graph because they were so extreme, the x-position shot down to -4,000 and the z-position shot down to -45,000. Because these were such extreme jumps, our filter did not update its state to follow these predictions very heavily. However, we did see a spike at these points because we wanted our filter to be somewhat susceptible to large changes, such as when the ball starts moving from a still position. This plot also demonstrates the smoothing nature of our filter at the beginning and end of the measured time steps. *
+*In this test of our system, one of our measured values (at ~t=45) was a very large outlier, which highlights some interesting behaviors of our system. Although these outliers are cut off in the graph because they were so extreme, the x-position shot down to -4,000 and the z-position shot down to -45,000. Because these were such extreme jumps, our filter did not update its state to follow these predictions very heavily. However, we did see a spike at these points because we wanted our filter to be somewhat susceptible to large changes, such as when the ball starts moving from a still position. This plot also demonstrates the smoothing nature of our filter at the beginning and end of the measured time steps.*
 
 ![Plots of the raw and filered velocity of the ball.](images/velocity_only_plots.png)
 
-*In the plot above, the smoothing of a very noisy velocity curve is very apparent. Because of the noise inherent to the system, the measured velocity was often extremely off from reasonable values. So, we made sure that our filter was not very susceptible to large spikes in velocity data. This is in contrast to the design of our positional state updates, which was less prone to random spikes because of noise. *
+*In the plot above, the smoothing of a very noisy velocity curve is very apparent. Because of the noise inherent to the system, the measured velocity was often extremely off from reasonable values. So, we made sure that our filter was not very susceptible to large spikes in velocity data. This is in contrast to the design of our positional state updates, which was less prone to random spikes because of noise.*
 
 ### Lessons Learned
 
