@@ -32,5 +32,59 @@ To implement a working filter for this project, we first implemented a Python cl
 
 ![An example of the Kalman filter smoothing out a noisy linear function.](images/general_kalman_filter_example.png)
 
+#### Camera Calibration
 
+To convert data from the Neato’s camera feed into real-world measurements, we first needed to measure values intrinsic to our system’s camera, namely focal distance and image center, through performing a camera calibration. To quickly perform a camera calibration, we used the [ros camera calibration package](http://wiki.ros.org/camera_calibration). With this package, we took photos of a checkered paper at different depths, heights, and angles. The package then calculated the focal length and image center of our camera.
 
+Once we had the system’s focal distance and image center, we were able to mathematically translate locations of pixels into their real-world counterparts. We did these calculations in the Camera Calibrator class. To be able to determine depth, we relied on a very important constraint of our system as we had designed it: the ball would always be on the floor. Using the radius of the ball in pixels and the pixel at which the ball’s center is located, we determined the point at which the ball interfaced with the ground. Because we also knew the height of the Neato’s camera, we could then geometrically calculate the depth of the ball from the Neato. Knowing the depth then allowed us to figure out the horizontal distance of the ball from the camera as well.
+
+#### Computer Vision
+
+In order to focus on the Kalman filter, we kept the ball identification algorithm simple. To find the soccer ball, we used OpenCV’s HoughCircles algorithm: [](https://docs.opencv.org/2.4/modules/imgproc/doc/feature_detection.html#houghcircles). This algorithm gave us all detected circles in a camera frame. To make our best guess of which circle was the soccer ball, we found the average pixel values inside the circle and picked the circle with average pixel values that were all above given thresholds. 
+
+![Image of a red soccer ball identified correctly by the algorithm while ignoring other circles](images/one_ball.png)
+
+*Sample output of the computer vision algorithm. The green circles represent all circles identified by the HoughCircles algorithm. The red circle around the ball indicates that the algorithm has identified it as the most likely candidate to be the soccer ball out of the found circles. All of the algorithm parameters and thresholds can be tuned and updated while the program is running to allow flexibility in lighting conditions and ball colors.*
+
+This algorithm is prone to error because the thresholds depend on the lighting in the room. It also does not do well when the soccer ball is in a location with a lot of objects in the background. The best performance of the algorithm is when the ball is placed in front of a plain, dark background.
+
+![Image of the algorithm identifying the red soccer ball instead of the green soccer ball](images/two_balls.png)
+
+*The algorithm uses the average pixel values to select the most likely ball. In this case, the red soccer ball is correctly identified as the target, while the green ball is ignored.*
+
+In order to make the algorithm more flexible to different lighting conditions, we created slider bars to adjust the parameters as the system was running. In this way, we could tune for the given conditions and more successfully identify the ball.
+
+![gif of the algorithm badly identifying the red ball in a noisy environment](images/noisy_cv.gif)
+
+*The algorithm performs much worse in an environment with other objects and light walls.*
+
+### Results
+
+#### Demo
+
+To validate the estimated location of the ball calculated by our Kalman Filter, we implemented three different ways to compare its behavior compared to that of the measurement.
+
+1. Plot each estimated state variable and it’s real measurement counterpart over time
+2. Visualize the estimated and measured ball location relative to the Neato in RViz 
+3. Display the estimated ball location on the Neato camera feed to compare it to the detected ball position
+
+Below, we include results of different tests using our filter to track a ball’s movement represented through these different forms.
+
+![gif of the raw measurement and filtered measurement in rviz](rviz_demo.gif)
+
+*In this rviz demonstration, the red sphere represents the raw measurement of the ball location and the blue sphere represents the filtered measurement. The robot is tracking a ball being moved slowly back and forth.*
+
+![gif showing the video output of the robot moving as it tries to maintain a fixed distance from the ball](images/stationary_ball.gif)
+
+*Video output of the Neato trying to maintain a fixed distance from a stationary ball.*
+
+![gif of the video output of the robot tracking a ball being rolled around](images/moving_ball.gif)
+
+*Video output of the robot tracking the ball being moved around. Notice how the predictive model causes the filter to deviate from the measurement when the ball accelerates suddenly*
+
+![Plots of the raw and filtered position and velocity of the ball](images/all_states_plots.png)
+![Plots of the raw and filered velocity of the ball.](images/velocity_only_plots.png)
+
+### Lessons Learned
+
+Fully understanding the mathematics behind Kalman Filters before implementation allowed us to debug our system much more easily. For example, we found that when applying our filter to a video of a stationary ball, our filter’s predicted state of the ball would approach the measured value but remain offset by too large of an amount. We diagnosed this issue as a problem with the Kalman gain, which acts as a ratio between 0 and 1. A low Kalman gain means that more of the filter’s predicted state will be taken into account to determine the updated state, while a high value means that more of the measurement would be taken into account to determine the updated state. Since we noticed that our filter’s updated state was not straying far from it’s predictions, leading to it getting stuck in place, we were able to realize that this behavior stemmed from a very low Kalman gain. From here, we were able to examine the different components of the equation to determine the Kalman gain, which led to our realization that our measurement covariance was too high. Testing this theory confirmed that lowering the filter’s measurement covariance in turn raised the Kalman gain, which allowed our filter to more accurately weight the measurement with its prediction in calculating its updated state. Spending a large chunk of the project researching and learning about Kalman filters paid off greatly in moments like these during our implementation. Especially in implementing a complex mathematical system such as this filter, are often many  variables to fine-tune and issues to debug, so a solid understanding of the theory proves invaluable.
